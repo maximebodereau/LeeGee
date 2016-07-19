@@ -5,7 +5,8 @@
     "start": "meteor run"
   },
   "dependencies": {
-    "meteor-node-stubs": "~0.2.0"
+    "meteor-node-stubs": "~0.2.0",
+    "threex.oimo": "^1.0.0"
   },
   "version": "1.0.0",
   "description": "leegee app",
