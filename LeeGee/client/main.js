@@ -35,10 +35,43 @@ function initScene() {
     camera.setTarget(new BABYLON.Vector3(0,0,10));
     camera.attachControl(canvas);
 
+    // Skybox
+    var skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
+    var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+    skyboxMaterial.backFaceCulling = false;
+    skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("skybox/skybox", scene);
+    skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+    skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+    skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+    skybox.material = skyboxMaterial;
+
     // Create light
-    var light = new BABYLON.PointLight("light", new BABYLON.Vector3(0,5,-5), scene);
+    var light = new BABYLON.HemisphericLight("Hemi0", new BABYLON.Vector3(0, 1, 0), scene);
+        light.diffuse = new BABYLON.Color3(1, 1, 1);
+        light.specular = new BABYLON.Color3(1, 1, 1);
+        light.groundColor = new BABYLON.Color3(0, 0, 0);
+
+
+        var extraGround = BABYLON.Mesh.CreateGround("extraGround", 1000, 1000, 1, scene, false);
+      var extraGroundMaterial = new BABYLON.StandardMaterial("extraGround", scene);
+      extraGroundMaterial.diffuseTexture = new BABYLON.Texture("ground.jpg", scene);
+      extraGroundMaterial.diffuseTexture.uScale = 60;
+      extraGroundMaterial.diffuseTexture.vScale = 60;
+      extraGround.position.y = -2.05;
+      extraGround.material = extraGroundMaterial;
+
+
+
 
     engine.runRenderLoop(function () {
         scene.render();
     });
+
+    /**
+     * Initialize the game
+     */
+     function initGame() {
+         BABYLON.Mesh.CreateSphere("sphere", 10, 1, scene);
+     }
+    initGame();
 }
