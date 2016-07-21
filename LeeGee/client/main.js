@@ -8,3 +8,14 @@ document.addEventListener("DOMContentLoaded", function () {
         Meteor.functions.initScene();
     }
 }, false);
+
+
+if(Meteor.isClient){
+  Template.scene.events({
+    "mousemove": function(event, template){
+       console.log(scene.pointerX, scene.pointerY, event);
+       // We try to pick an object
+         var pickResult = scene.pick(scene.pointerX, scene.pointerY);
+    }
+  });
+}
