@@ -2,6 +2,15 @@ import BABYLON from 'babylonjs';
 
 Meteor.functions = {
 
+  //Shadows
+  shadows: function () {
+    shadowGenerator = new BABYLON.ShadowGenerator(2048, light);
+    shadowGenerator.useBlurVarianceShadowMap = true;
+    shadowGenerator.bias = 0.0000005;
+    shadowGenerator.setDarkness(0.5);
+	  shadowGenerator.usePoissonSampling = true;
+  },
+
   //Animation
   animateLife: function () {
     animationBox = new BABYLON.Animation("living", "scaling.x", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
@@ -36,15 +45,23 @@ Meteor.functions = {
     //mesh.actionManager = new BABYLON.ActionManager(scene);
     city = BABYLON.Mesh.CreateTorus("city", 2, 2, 60, scene);
     city.material = new BABYLON.StandardMaterial("Mat", scene);
+    city.material.diffuseColor = new BABYLON.Color3(1.00, 0.75, 0.56);
+    city.material.emissiveColor = new BABYLON.Color3(0.83, 0.68, 0.56);
+    city.material.ambientColor = new BABYLON.Color3(0.57, 0.44, 0.35);
+
     city.checkCollisions = true;
+    city.isPickable = true ;
+
+
+    //shadow
+    shadowGenerator.getShadowMap().renderList.push(city);
 
     console.log("city:"+city.position);
 
     city.animations.push(animationBox);
     scene.beginAnimation(city, 0, 100, true);
 
-    var generator = new BABYLON.ShadowGenerator(512, light);
-    generator.getShadowMap().renderList.push(city);
+
   },
 
   // Camera
@@ -79,20 +96,23 @@ Meteor.functions = {
 
   // Create light
   lights: function () {
-    light = new BABYLON.PointLight("light", new BABYLON.Vector3(0, 5, 0), scene);
+    light = new BABYLON.PointLight("light", new BABYLON.Vector3(0, 50, 0), scene);
+      light.intensity = 0.5;
+      godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, null, 100, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
+    	godrays.mesh.material.diffuseTexture = new BABYLON.Texture('sun.png', scene, true, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+    	godrays.mesh.material.diffuseTexture.hasAlpha = true;
+    	godrays.mesh.position = new BABYLON.Vector3(-250, 250, 250);
+    	godrays.mesh.scaling = new BABYLON.Vector3(50, 47, 50);
+
+	light.position = godrays.mesh.position;
+    lightHem = new BABYLON.HemisphericLight("lightHem", new BABYLON.Vector3(0, 50, 0), scene);
+      lightHem.intensity = 0.2;
     console.log("light:"+light.position);
   },
 
   //Ground
   ground: function () {
-    extraGround = BABYLON.Mesh.CreateGround("extraGround", 1000, 1000, 1, scene, false);
-    extraGroundMaterial = new BABYLON.StandardMaterial("extraGround", scene);
-        extraGroundMaterial.diffuseTexture = new BABYLON.Texture("ground.jpg", scene);
-        extraGroundMaterial.diffuseTexture.uScale = 0;
-        extraGroundMaterial.diffuseTexture.vScale = 0;
-        extraGround.position.y = -2.05;
-        extraGround.material = extraGroundMaterial;
-        extraGround.checkCollisions = true;
+
 
     ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "heightMap.png", 1000, 1000, 100, 0, 10, scene, false);
     groundMaterial = new BABYLON.StandardMaterial("ground", scene);
@@ -103,14 +123,9 @@ Meteor.functions = {
         ground.position.y = -8.0;
         ground.material = groundMaterial;
         ground.checkCollisions = true;
+        ground.receiveShadows = true;
+        shadowGenerator.getShadowMap().renderList.push(ground);
 
-  },
-
-  //Shadows
-  shadows: function () {
-  //   generator = new BABYLON.ShadowGenerator(512, light);
-	//   generator.getShadowMap().renderList.push(city);
-  //   ground.receiveShadows = true;
   },
 
   // Main Scene
@@ -122,17 +137,29 @@ Meteor.functions = {
      // Create scene
      scene = new BABYLON.Scene(engine);
 
+     // Resize the babylon engine when the window is resized
+     window.addEventListener("resize", function () {
+     	if (engine) {
+     		engine.resize();
+     	}
+     },false);
+
+     // Show Control Debug Panel
+     //scene.debugLayer.show();
+
+     // Functions Called
+
      Meteor.functions.initCamera();
 
      Meteor.functions.skyBox();
 
      Meteor.functions.lights();
 
+     Meteor.functions.shadows();
+
      Meteor.functions.animateLife();
 
      Meteor.functions.ground();
-
-     Meteor.functions.shadows();
 
      Meteor.functions.initGame();
 
