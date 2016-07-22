@@ -42,7 +42,7 @@ Meteor.functions = {
   },
 
   initRessources: function () {
-    
+    pyramid = BABYLON.Mesh.CreatePyramid4("pyramid", 10, 20, scene);
   },
 
   initGame: function() {
@@ -182,6 +182,8 @@ Meteor.functions = {
      Meteor.functions.ground();
 
      Meteor.functions.initGame();
+
+     //Meteor.functions.initRessources();
 
      //Meteor.functions.fogInit();
 
