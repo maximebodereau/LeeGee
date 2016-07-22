@@ -3,9 +3,16 @@
 </head>
 
 <body>
+  {{> interface}}
   {{> scene}}
 </body>
 
 <template name="scene">
   <canvas id="renderCanvas"></canvas>
+</template>
+
+<template name="interface">
+  <div class="city">50</div>
+  <div class="worker">1</div>
+  <div class="soldat">5</div>
 </template>

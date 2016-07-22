@@ -41,6 +41,10 @@ Meteor.functions = {
 
   },
 
+  initRessources: function () {
+    
+  },
+
   initGame: function() {
     //mesh.actionManager = new BABYLON.ActionManager(scene);
     city = BABYLON.Mesh.CreateTorus("city", 2, 2, 60, scene);
@@ -48,6 +52,7 @@ Meteor.functions = {
     city.material.diffuseColor = new BABYLON.Color3(1.00, 0.75, 0.56);
     city.material.emissiveColor = new BABYLON.Color3(0.83, 0.68, 0.56);
     city.material.ambientColor = new BABYLON.Color3(0.57, 0.44, 0.35);
+    city.applyGravity = true;
 
     city.checkCollisions = true;
     city.isPickable = true ;
@@ -98,16 +103,17 @@ Meteor.functions = {
   lights: function () {
     light = new BABYLON.PointLight("light", new BABYLON.Vector3(0, 50, 0), scene);
       light.intensity = 0.5;
-      godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, null, 100, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
-    	godrays.mesh.material.diffuseTexture = new BABYLON.Texture('sun.png', scene, true, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
-    	godrays.mesh.material.diffuseTexture.hasAlpha = true;
-    	godrays.mesh.position = new BABYLON.Vector3(-250, 250, 250);
-    	godrays.mesh.scaling = new BABYLON.Vector3(50, 47, 50);
 
-	light.position = godrays.mesh.position;
-    lightHem = new BABYLON.HemisphericLight("lightHem", new BABYLON.Vector3(0, 50, 0), scene);
+    godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, null, 10, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
+  	godrays.mesh.material.diffuseTexture = new BABYLON.Texture('sun.png', scene, true, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+  	godrays.mesh.material.diffuseTexture.hasAlpha = true;
+  	godrays.mesh.position = new BABYLON.Vector3(-250, 250, 250);
+  	godrays.mesh.scaling = new BABYLON.Vector3(50, 47, 50);
+
+  	light.position = godrays.mesh.position;
+      lightHem = new BABYLON.HemisphericLight("lightHem", new BABYLON.Vector3(0, 50, 0), scene);
       lightHem.intensity = 0.2;
-    console.log("light:"+light.position);
+      console.log("light:"+light.position);
   },
 
   //Ground
@@ -128,6 +134,18 @@ Meteor.functions = {
 
   },
 
+  //Fog
+  fogInit: function () {
+    scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
+    BABYLON.Scene.FOGMODE_LINEAR;
+
+    scene.fogColor = new BABYLON.Color3(0.9, 0.9, 0.85);
+    scene.fogDensity = 0.0009;
+
+    scene.fogStart = 20.0;
+    scene.fogEnd = 60.0;
+  },
+
   // Main Scene
   initScene: function() {
      // Get canvas
@@ -136,6 +154,8 @@ Meteor.functions = {
      engine = new BABYLON.Engine(canvas, true);
      // Create scene
      scene = new BABYLON.Scene(engine);
+
+     scene.workerCollisions = true;
 
      // Resize the babylon engine when the window is resized
      window.addEventListener("resize", function () {
@@ -162,6 +182,8 @@ Meteor.functions = {
      Meteor.functions.ground();
 
      Meteor.functions.initGame();
+
+     //Meteor.functions.fogInit();
 
      engine.runRenderLoop(function () {
          scene.render();
