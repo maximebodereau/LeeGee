@@ -53,13 +53,12 @@ Meteor.functions = {
     city.material.emissiveColor = new BABYLON.Color3(0.83, 0.68, 0.56);
     city.material.ambientColor = new BABYLON.Color3(0.57, 0.44, 0.35);
     city.applyGravity = true;
-
     city.checkCollisions = true;
     city.isPickable = true ;
 
 
     //shadow
-    shadowGenerator.getShadowMap().renderList.push(city);
+    //shadowGenerator.getShadowMap().renderList.push(city);
 
     console.log("city:"+city.position);
 
@@ -67,6 +66,26 @@ Meteor.functions = {
     scene.beginAnimation(city, 0, 100, true);
 
 
+  },
+
+  randomnumber: function () {
+    return Math.random() * (10 - 2) + 2;
+  },
+
+  addMinion: function () {
+    sphere = BABYLON.Mesh.CreateSphere("sphere", 12, 2, scene);
+
+    //randomnumber = Math.random() * (maximum - minimum ) + minimum;
+
+    sphere.position.x += Math.random() * (10 - 2) + 2;
+    sphere.position.z += Math.random() * (10 - 2) + 2;
+    sphere.position.y += Math.random() * (10 - 2) + 2;
+
+
+
+    sphere.applyGravity = true;
+    sphere.checkCollisions = true;
+    sphere.isPickable = true ;
   },
 
   // Camera
@@ -104,16 +123,16 @@ Meteor.functions = {
     light = new BABYLON.PointLight("light", new BABYLON.Vector3(0, 50, 0), scene);
       light.intensity = 0.5;
 
-    godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, null, 10, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
-  	godrays.mesh.material.diffuseTexture = new BABYLON.Texture('sun.png', scene, true, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
-  	godrays.mesh.material.diffuseTexture.hasAlpha = true;
-  	godrays.mesh.position = new BABYLON.Vector3(-250, 250, 250);
-  	godrays.mesh.scaling = new BABYLON.Vector3(50, 47, 50);
+    // godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, null, 10, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
+  	// godrays.mesh.material.diffuseTexture = new BABYLON.Texture('sun.png', scene, true, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+  	// godrays.mesh.material.diffuseTexture.hasAlpha = true;
+  	// godrays.mesh.position = new BABYLON.Vector3(-250, 250, 250);
+  	// godrays.mesh.scaling = new BABYLON.Vector3(50, 47, 50);
 
-  	light.position = godrays.mesh.position;
-      lightHem = new BABYLON.HemisphericLight("lightHem", new BABYLON.Vector3(0, 50, 0), scene);
-      lightHem.intensity = 0.2;
-      console.log("light:"+light.position);
+  	// light.position = godrays.mesh.position;
+    //   lightHem = new BABYLON.HemisphericLight("lightHem", new BABYLON.Vector3(0, 50, 0), scene);
+    //   lightHem.intensity = 0.2;
+    //   console.log("light:"+light.position);
   },
 
   //Ground
@@ -130,7 +149,7 @@ Meteor.functions = {
         ground.material = groundMaterial;
         ground.checkCollisions = true;
         ground.receiveShadows = true;
-        shadowGenerator.getShadowMap().renderList.push(ground);
+        //shadowGenerator.getShadowMap().renderList.push(ground);
 
   },
 
@@ -175,7 +194,9 @@ Meteor.functions = {
 
      Meteor.functions.lights();
 
-     Meteor.functions.shadows();
+     //Meteor.functions.shadows();
+
+     //Meteor.functions.addMinion();
 
      Meteor.functions.animateLife();
 

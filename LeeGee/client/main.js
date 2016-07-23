@@ -24,5 +24,12 @@ if(Meteor.isClient){
       city.scaling.x = 20;
 
     }
+
+  });
+  Template.interface.events({
+    "click": function (event, template) {
+      Meteor.functions.addMinion();
+      console.log("coucou");
+    }
   });
 }
