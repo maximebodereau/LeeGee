@@ -42,7 +42,13 @@ Meteor.functions = {
   },
 
   initRessources: function () {
-    pyramid = BABYLON.Mesh.CreatePyramid4("pyramid", 10, 20, scene);
+    ressource = BABYLON.Mesh.CreateSphere("ressource", 5, 2, scene);
+    ressource.position.x = 200;
+    ressource.position.y = 1;
+    ressource.position.z = 200;
+    RessourcePos = ressource.position.x;
+    Session.set("RessourcePos", RessourcePos);
+
   },
 
   initGame: function() {
@@ -56,36 +62,62 @@ Meteor.functions = {
     city.checkCollisions = true;
     city.isPickable = true ;
 
+    city.animations.push(animationBox);
 
     //shadow
     //shadowGenerator.getShadowMap().renderList.push(city);
 
-    console.log("city:"+city.position);
+    //City position
+    city.position.x = Math.random() * (80 - 10);
+    city.position.y = 1;
+    city.position.z = Math.random() * (80- 10);
+    CityPosX = city.position.x;
+    CityPosY = city.position.y;
+    CityPosZ = city.position.z;
+    Session.set('CityPosX', CityPosX);
+    Session.set('CityPosY', CityPosY);
+    Session.set('CityPosZ', CityPosZ);
 
-    city.animations.push(animationBox);
-    scene.beginAnimation(city, 0, 100, true);
 
+    console.log(Session.get("CityPosX"));
+    console.log(Session.get("CityPosY"));
+    console.log(Session.get("CityPosZ"));
 
-  },
-
-  randomnumber: function () {
-    return Math.random() * (10 - 2) + 2;
   },
 
   addMinion: function () {
-    sphere = BABYLON.Mesh.CreateSphere("sphere", 12, 2, scene);
+    sphere = BABYLON.Mesh.CreateSphere("sphere", 5, 2, scene);
 
     //randomnumber = Math.random() * (maximum - minimum ) + minimum;
 
-    sphere.position.x += Math.random() * (10 - 2) + 2;
-    sphere.position.z += Math.random() * (10 - 2) + 2;
-    sphere.position.y += Math.random() * (10 - 2) + 2;
+    sphere.position.x = Session.get("CityPosX");
+    sphere.position.y = 15;
+    sphere.position.z = Session.get("CityPosZ");
 
-
-
-    sphere.applyGravity = true;
-    sphere.checkCollisions = true;
+    sphere.animations.push(animationBox);
     sphere.isPickable = true ;
+
+    sphere.ellipsoid = new BABYLON.Vector3(0.8, 0.8, 0.8);
+    sphere.ellipsoidOffset = new BABYLON.Vector3(0.8, 0.8, 0.8);
+    scene.registerBeforeRender(function () {
+        sphere.moveWithCollisions(scene.gravity);
+     });
+     sphere.applyGravity = true;
+     sphere.checkCollisions = true;
+     // Casting a ray to get height
+       var ray = new BABYLON.Ray(new BABYLON.Vector3(sphere.position.x, ground.getBoundingInfo().boundingBox.maximumWorld.y + 1, sphere.position.z),  new BABYLON.Vector3(0, -1, 0));
+       var worldInverse = new BABYLON.Matrix();
+       ground.getWorldMatrix().invertToRef(worldInverse);
+       ray = BABYLON.Ray.Transform(ray, worldInverse);
+       var pickInfo = ground.intersects(ray);
+       if (pickInfo.hit) {
+           sphere.position.y = pickInfo.pickedPoint.y + 1;
+       }
+
+     sphere.position.x += Session.get("RessourcePos") * 3;
+
+     //sphere.setPhysicsState({ impostor: BABYLON.PhysicsEngine.SphereImpostor, move:true, restitution: 1, mass:1, friction:0.5});
+     //sphere.onCollide = function(){  console.log('I am colliding with something'); }
   },
 
   // Camera
@@ -103,6 +135,10 @@ Meteor.functions = {
     camera.ellipsoid = new BABYLON.Vector3(1, 1, 1);
 
     console.log("camera:"+camera.position);
+
+    camera.position.x = Session.get("CityPosX") || 20;
+    camera.position.y = Session.get("CityPosY") || 20;
+    camera.position.z = Session.get("CityPosZ") || -20;
   },
 
   // Skybox
@@ -137,20 +173,17 @@ Meteor.functions = {
 
   //Ground
   ground: function () {
-
-
     ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "heightMap.png", 1000, 1000, 100, 0, 10, scene, false);
     groundMaterial = new BABYLON.StandardMaterial("ground", scene);
         groundMaterial.diffuseTexture = new BABYLON.Texture("ground.jpg", scene);
         groundMaterial.diffuseTexture.uScale = 10;
         groundMaterial.diffuseTexture.vScale = 10;
         groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-        ground.position.y = -8.0;
+        ground.position.y = -8;
         ground.material = groundMaterial;
         ground.checkCollisions = true;
         ground.receiveShadows = true;
         //shadowGenerator.getShadowMap().renderList.push(ground);
-
   },
 
   //Fog
@@ -164,6 +197,12 @@ Meteor.functions = {
     scene.fogStart = 20.0;
     scene.fogEnd = 60.0;
   },
+
+  gravity: function () {
+    //Set gravity for the scene (G force like, on Y-axis)
+    scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
+  },
+
 
   // Main Scene
   initScene: function() {
@@ -183,8 +222,10 @@ Meteor.functions = {
      	}
      },false);
 
+
+
      // Show Control Debug Panel
-     //scene.debugLayer.show();
+     scene.debugLayer.show();
 
      // Functions Called
 
@@ -204,9 +245,11 @@ Meteor.functions = {
 
      Meteor.functions.initGame();
 
-     //Meteor.functions.initRessources();
+     Meteor.functions.initRessources();
 
      //Meteor.functions.fogInit();
+
+     Meteor.functions.gravity();
 
      engine.runRenderLoop(function () {
          scene.render();

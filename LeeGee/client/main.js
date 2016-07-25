@@ -18,18 +18,15 @@ if(Meteor.isClient){
       //var pickResult = scene.pick(scene.pointerX, scene.pointerY);
     },
     "click": function (event, template) {
-      citySize = city.getBoundingInfo().boundingBox.extendSize;
-      console.log(citySize);
-
-      city.scaling.x = 20;
 
     }
 
   });
   Template.interface.events({
     "click": function (event, template) {
+      // Add Minion
       Meteor.functions.addMinion();
-      console.log("coucou");
+
     }
   });
 }
