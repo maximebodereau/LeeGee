@@ -46,8 +46,12 @@ Meteor.functions = {
     ressource.position.x = 200;
     ressource.position.y = 1;
     ressource.position.z = 200;
-    RessourcePos = ressource.position.x;
-    Session.set("RessourcePos", RessourcePos);
+    RessourcePosX = ressource.position.x;
+    RessourcePosY = ressource.position.y;
+    RessourcePosZ = ressource.position.z;
+    Session.set("RessourcePosX", RessourcePosX);
+    Session.set("RessourcePosY", RessourcePosY);
+    Session.set("RessourcePosZ", RessourcePosZ);
 
   },
 
@@ -77,12 +81,6 @@ Meteor.functions = {
     Session.set('CityPosX', CityPosX);
     Session.set('CityPosY', CityPosY);
     Session.set('CityPosZ', CityPosZ);
-
-
-    console.log(Session.get("CityPosX"));
-    console.log(Session.get("CityPosY"));
-    console.log(Session.get("CityPosZ"));
-
   },
 
   addMinion: function () {
@@ -114,7 +112,44 @@ Meteor.functions = {
            sphere.position.y = pickInfo.pickedPoint.y + 1;
        }
 
-     sphere.position.x += Session.get("RessourcePos") * 3;
+       moveToRessourceX = new BABYLON.Animation("moveToRessourceX", "position.x", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+       moveToRessourceY = new BABYLON.Animation("moveToRessourceY", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+
+       // Animation keys
+        var keysX = [];
+        keysX.push({
+            frame: 0,
+            value: Session.get("CityPosX")
+        });
+        keysX.push({
+            frame: 50,
+            value: Session.get("RessourcePosX")
+        });
+        keysX.push({
+            frame: 100,
+            value: Session.get("CityPosX")
+        });
+        moveToRessourceX.setKeys(keysX);
+
+        var keysY = [];
+        keysY.push({
+            frame: 0,
+            value: Session.get("CityPosY")
+        });
+        keysY.push({
+            frame: 50,
+            value: Session.get("RessourcePosY")
+        });
+        keysY.push({
+            frame: 100,
+            value: Session.get("CityPosY")
+        });
+        moveToRessourceY.setKeys(keysY);
+
+      sphere.animations.push(moveToRessourceX);
+      sphere.animations.push(moveToRessourceY);
+
+       scene.beginAnimation(sphere, 0, 100, true);
 
      //sphere.setPhysicsState({ impostor: BABYLON.PhysicsEngine.SphereImpostor, move:true, restitution: 1, mass:1, friction:0.5});
      //sphere.onCollide = function(){  console.log('I am colliding with something'); }
