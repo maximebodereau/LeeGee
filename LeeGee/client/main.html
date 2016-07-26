@@ -3,6 +3,7 @@
 </head>
 
 <body>
+  {{> modalLose}}
   {{> interface}}
   {{> scene}}
 </body>
@@ -13,4 +14,22 @@
 
 <template name="interface">
   <div class="city">50</div>
+</template>
+
+
+<template name="modalLose">
+  <!--Modal-->
+<div class="modal fade" id="modalLose">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <button type="button" class="btn btn-block btn-danger">Play Again</button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+<!--End Modal-->
 </template>

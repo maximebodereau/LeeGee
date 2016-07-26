@@ -23,10 +23,19 @@ if(Meteor.isClient){
 
   });
   Template.interface.events({
-    "click": function (event, template) {
+    "click .city": function (event, template) {
       // Add Minion
       Meteor.functions.addMinion();
 
+      city.scaling.x -= 0.1;
+      city.scaling.y -= 0.1;
+      city.scaling.z -= 0.1;
+
+    }
+  });
+  Template.modalLose.events({
+    "click .btn-danger": function(event, template){ 
+       location.reload();
     }
   });
 }

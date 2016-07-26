@@ -64,7 +64,11 @@ Meteor.functions = {
     city.material.ambientColor = new BABYLON.Color3(0.57, 0.44, 0.35);
     city.applyGravity = true;
     city.checkCollisions = true;
-    city.isPickable = true ;
+    city.isPickable = true;
+
+    cityScale = city.scaling.x;
+    Session.set("cityScale", cityScale);
+
 
     city.animations.push(animationBox);
 
@@ -81,11 +85,15 @@ Meteor.functions = {
     Session.set('CityPosX', CityPosX);
     Session.set('CityPosY', CityPosY);
     Session.set('CityPosZ', CityPosZ);
+
+    CityPos = city.position;
+    Session.set('CityPos', CityPos);
+
   },
 
   minionAnim: function () {
-    moveToRessourceX = new BABYLON.Animation("moveToRessourceX", "position.x", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-    moveToRessourceY = new BABYLON.Animation("moveToRessourceY", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+    moveToRessourceX = new BABYLON.Animation("moveToRessourceX", "position.x", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+    moveToRessourceY = new BABYLON.Animation("moveToRessourceY", "position.y", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
     // Animation keys
      var keysX = [];
@@ -121,8 +129,13 @@ Meteor.functions = {
    sphere.animations.push(moveToRessourceX);
    sphere.animations.push(moveToRessourceY);
 
-   scene.beginAnimation(sphere, 0, 100, true);
+   speedRatio = 0.02;
 
+   scene.beginAnimation(sphere, 0, 100, true, speedRatio);
+
+   event1 = new BABYLON.AnimationEvent(50, function() { console.log("Yeah!"); }, true);
+   // Attach your event to your animation
+   moveToRessourceX.addEvent(event1);
 
  },
 
@@ -132,7 +145,7 @@ Meteor.functions = {
     //randomnumber = Math.random() * (maximum - minimum ) + minimum;
 
     sphere.position.x = Session.get("CityPosX");
-    sphere.position.y = 15;
+    sphere.position.y = 8;
     sphere.position.z = Session.get("CityPosZ");
 
     sphere.animations.push(animationBox);
@@ -168,18 +181,11 @@ Meteor.functions = {
     camera.attachControl(canvas);
     //camera.applyGravity = true;
     camera.checkCollisions = true;
-    //Set gravity for the scene (G force like, on Y-axis)
-    scene.gravity = new BABYLON.Vector3(0, -5, 0);
-    // Enable Collisions
-    scene.collisionsEnabled = true;
+
     //Set the ellipsoid around the camera (e.g. your player's size)
     camera.ellipsoid = new BABYLON.Vector3(1, 1, 1);
 
-    console.log("camera:"+camera.position);
-
-    camera.position.x = Session.get("CityPosX") || 20;
-    camera.position.y = Session.get("CityPosY") || 20;
-    camera.position.z = Session.get("CityPosZ") || -20;
+    camera.target = city;
   },
 
   // Skybox
@@ -214,13 +220,16 @@ Meteor.functions = {
 
   //Ground
   ground: function () {
+
+    groundPlane = BABYLON.Mesh.CreateGround("ground1", 1000, 1000, 2, scene);
+
     ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "heightMap.png", 1000, 1000, 100, 0, 10, scene, false);
     groundMaterial = new BABYLON.StandardMaterial("ground", scene);
         groundMaterial.diffuseTexture = new BABYLON.Texture("ground.jpg", scene);
         groundMaterial.diffuseTexture.uScale = 10;
         groundMaterial.diffuseTexture.vScale = 10;
         groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-        ground.position.y = -8;
+        ground.position.y = -6;
         ground.material = groundMaterial;
         ground.checkCollisions = true;
         ground.receiveShadows = true;
@@ -233,7 +242,7 @@ Meteor.functions = {
     BABYLON.Scene.FOGMODE_LINEAR;
 
     scene.fogColor = new BABYLON.Color3(0.9, 0.9, 0.85);
-    scene.fogDensity = 0.0009;
+    scene.fogDensity = 0.009;
 
     scene.fogStart = 20.0;
     scene.fogEnd = 60.0;
@@ -242,6 +251,13 @@ Meteor.functions = {
   gravity: function () {
     //Set gravity for the scene (G force like, on Y-axis)
     scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
+  },
+
+  gameLose: function () {
+    var cityScale = city.scaling.x;
+    if (cityScale < 0.1) {
+      $('#modalLose').modal('show');
+    }
   },
 
 
@@ -253,8 +269,11 @@ Meteor.functions = {
      engine = new BABYLON.Engine(canvas, true);
      // Create scene
      scene = new BABYLON.Scene(engine);
-
      scene.workerCollisions = true;
+     //Set gravity for the scene (G force like, on Y-axis)
+     scene.gravity = new BABYLON.Vector3(0, -5, 0);
+     // Enable Collisions
+     scene.collisionsEnabled = true;
 
      // Resize the babylon engine when the window is resized
      window.addEventListener("resize", function () {
@@ -266,11 +285,9 @@ Meteor.functions = {
 
 
      // Show Control Debug Panel
-     scene.debugLayer.show();
+     //scene.debugLayer.show();
 
      // Functions Called
-
-     Meteor.functions.initCamera();
 
      Meteor.functions.skyBox();
 
@@ -286,14 +303,20 @@ Meteor.functions = {
 
      Meteor.functions.initGame();
 
+     Meteor.functions.initCamera();
+
      Meteor.functions.initRessources();
 
-     //Meteor.functions.fogInit();
+     Meteor.functions.fogInit();
 
      Meteor.functions.gravity();
 
+
      engine.runRenderLoop(function () {
          scene.render();
+
+         //Game Status
+         Meteor.functions.gameLose();
      });
 
  }
