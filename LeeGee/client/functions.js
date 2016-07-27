@@ -91,6 +91,12 @@ Meteor.functions = {
 
   },
 
+  cityScale: function () {
+    city.scaling.x -= 0.1;
+    city.scaling.y -= 0.1;
+    city.scaling.z -= 0.1;
+  },
+
   minionAnim: function () {
     moveToRessourceX = new BABYLON.Animation("moveToRessourceX", "position.x", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
     moveToRessourceY = new BABYLON.Animation("moveToRessourceY", "position.y", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
@@ -140,7 +146,12 @@ Meteor.functions = {
  },
 
   addMinion: function () {
-    sphere = BABYLON.Mesh.CreateSphere("sphere", 5, 2, scene);
+    sphere = BABYLON.Mesh.CreateSphere("sphere", 10, 2, scene);
+    mat = new BABYLON.StandardMaterial("mat", scene);
+	mat.diffuseColor = BABYLON.Color3.Red();
+	mat.alpha = 0.8;
+    sphere.material = mat;
+
 
     //randomnumber = Math.random() * (maximum - minimum ) + minimum;
 
