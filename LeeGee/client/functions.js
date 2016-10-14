@@ -13,7 +13,7 @@ Meteor.functions = {
 
   //Animation
   animateLife: function () {
-    animationBox = new BABYLON.Animation("living", "scaling.x", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+    animationBox = new BABYLON.Animation("living", "scaling.x", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
     // An array with all animation keys
     keys = [];
     keys.push({
@@ -46,9 +46,11 @@ Meteor.functions = {
     ressource.position.x = 200;
     ressource.position.y = 1;
     ressource.position.z = 200;
+    RessourcePos = ressource.position;
     RessourcePosX = ressource.position.x;
     RessourcePosY = ressource.position.y;
     RessourcePosZ = ressource.position.z;
+    Session.set("RessourcePos", RessourcePos);
     Session.set("RessourcePosX", RessourcePosX);
     Session.set("RessourcePosY", RessourcePosY);
     Session.set("RessourcePosZ", RessourcePosZ);
@@ -72,29 +74,44 @@ Meteor.functions = {
 
     city.animations.push(animationBox);
 
+    // City Random Position at launch
+    city.position.x = Math.random() * (80 - 10);
+    city.position.y = 8;
+    city.position.z = Math.random() * (80- 10);
+
+    scene.registerBeforeRender(function () {
+		    city.moveWithCollisions(scene.gravity);
+
+        //City position
+        CityPos = city.position;
+        CityPosX = city.position.x;
+        CityPosY = city.position.y;
+        CityPosZ = city.position.z;
+        Session.set('CityPosX', CityPosX);
+        Session.set('CityPosY', CityPosY);
+        Session.set('CityPosZ', CityPosZ);
+        Session.set('CityPos', CityPos);
+
+	  });
+
+
+
     //shadow
     //shadowGenerator.getShadowMap().renderList.push(city);
 
-    //City position
-    city.position.x = Math.random() * (80 - 10);
-    city.position.y = 1;
-    city.position.z = Math.random() * (80- 10);
-    CityPosX = city.position.x;
-    CityPosY = city.position.y;
-    CityPosZ = city.position.z;
-    Session.set('CityPosX', CityPosX);
-    Session.set('CityPosY', CityPosY);
-    Session.set('CityPosZ', CityPosZ);
 
-    CityPos = city.position;
-    Session.set('CityPos', CityPos);
 
   },
 
-  cityScale: function () {
-    city.scaling.x -= 0.1;
-    city.scaling.y -= 0.1;
-    city.scaling.z -= 0.1;
+  cityScaleReduce: function () {
+      city.scaling.x -= 0.1;
+      city.scaling.y -= 0.1;
+      city.scaling.z -= 0.1;
+  },
+  cityScaleAugment: function () {
+      city.scaling.x += 0.01;
+      city.scaling.y += 0.01;
+      city.scaling.z += 0.01;
   },
 
   minionAnim: function () {
@@ -135,32 +152,35 @@ Meteor.functions = {
    sphere.animations.push(moveToRessourceX);
    sphere.animations.push(moveToRessourceY);
 
-   speedRatio = 0.02;
+   speedRatio = 0.2;
 
    scene.beginAnimation(sphere, 0, 100, true, speedRatio);
 
-   event1 = new BABYLON.AnimationEvent(50, function() { console.log("Yeah!"); }, true);
+   ressourceReached = new BABYLON.AnimationEvent(99, function() {
+      console.log("Bring Back");
+      Meteor.functions.cityScaleAugment();
+   }, false);
    // Attach your event to your animation
-   moveToRessourceX.addEvent(event1);
+   moveToRessourceX.addEvent(ressourceReached);
 
  },
 
   addMinion: function () {
     sphere = BABYLON.Mesh.CreateSphere("sphere", 10, 2, scene);
-    mat = new BABYLON.StandardMaterial("mat", scene);
-	mat.diffuseColor = BABYLON.Color3.Red();
-	mat.alpha = 0.8;
-    sphere.material = mat;
-
+      mat = new BABYLON.StandardMaterial("mat", scene);
+    	mat.diffuseColor = BABYLON.Color3.Red();
+    	mat.alpha = 0.8;
+      sphere.material = mat;
 
     //randomnumber = Math.random() * (maximum - minimum ) + minimum;
 
-    sphere.position.x = Session.get("CityPosX");
-    sphere.position.y = 8;
-    sphere.position.z = Session.get("CityPosZ");
+    scene.registerBeforeRender(function () {
+      sphere.position.x = Session.get("CityPosX") +  city.scaling.x;
+      sphere.position.y = Session.get("CityPosY") +  city.scaling.y;
+      sphere.position.z = Session.get("CityPosZ") +  city.scaling.z;
+    });
 
-    sphere.animations.push(animationBox);
-    sphere.isPickable = true ;
+    sphere.isPickable = true;
 
     sphere.ellipsoid = new BABYLON.Vector3(0.8, 0.8, 0.8);
     sphere.ellipsoidOffset = new BABYLON.Vector3(0.8, 0.8, 0.8);
@@ -169,20 +189,12 @@ Meteor.functions = {
      });
      sphere.applyGravity = true;
      sphere.checkCollisions = true;
-     // Casting a ray to get height
-       var ray = new BABYLON.Ray(new BABYLON.Vector3(sphere.position.x, ground.getBoundingInfo().boundingBox.maximumWorld.y + 1, sphere.position.z),  new BABYLON.Vector3(0, -1, 0));
-       var worldInverse = new BABYLON.Matrix();
-       ground.getWorldMatrix().invertToRef(worldInverse);
-       ray = BABYLON.Ray.Transform(ray, worldInverse);
-       var pickInfo = ground.intersects(ray);
-       if (pickInfo.hit) {
-           sphere.position.y = pickInfo.pickedPoint.y + 1;
-       }
 
-       Meteor.functions.minionAnim();
+     sphere.animations.push(animationBox);
+     Meteor.functions.minionAnim();
 
      //sphere.setPhysicsState({ impostor: BABYLON.PhysicsEngine.SphereImpostor, move:true, restitution: 1, mass:1, friction:0.5});
-     //sphere.onCollide = function(){  console.log('I am colliding with something'); }
+     //sphere.onCollide = function(){  console.log('I am colliding with something'); };
   },
 
   // Camera
@@ -240,11 +252,13 @@ Meteor.functions = {
         groundMaterial.diffuseTexture.uScale = 10;
         groundMaterial.diffuseTexture.vScale = 10;
         groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-        ground.position.y = -6;
+        ground.position.y = 0;
         ground.material = groundMaterial;
         ground.checkCollisions = true;
         ground.receiveShadows = true;
         //shadowGenerator.getShadowMap().renderList.push(ground);
+
+
   },
 
   //Fog
@@ -310,17 +324,17 @@ Meteor.functions = {
 
      Meteor.functions.animateLife();
 
-     Meteor.functions.ground();
-
      Meteor.functions.initGame();
 
      Meteor.functions.initCamera();
 
      Meteor.functions.initRessources();
 
-     Meteor.functions.fogInit();
+     //Meteor.functions.fogInit();
 
      Meteor.functions.gravity();
+
+     Meteor.functions.ground();
 
 
      engine.runRenderLoop(function () {

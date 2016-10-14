@@ -27,11 +27,11 @@ if(Meteor.isClient){
   });
 
   // City Life Default Value Reactive
-  cityLife = new ReactiveVar(10);
+  minionNumber = new ReactiveVar(0);
 
   Template.interface.helpers({
-    cityLife: function(){
-      return cityLife.get();
+    minionNumber: function(){
+      return minionNumber.get();
     }
   });
 
@@ -39,9 +39,9 @@ if(Meteor.isClient){
     "click .city": function (event, template) {
       // Add Minion
       Meteor.functions.addMinion();
-      Meteor.functions.cityScale();
+      Meteor.functions.cityScaleReduce();
 
-      cityLife.set(cityLife.get() - 1);
+      minionNumber.set(minionNumber.get() + 1);
     }
   });
 }
