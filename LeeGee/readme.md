@@ -2,5 +2,10 @@ LeeGee
 
 Install Meteor
 
-run: meteor npm install --save babylonjs
-run: meteor
+in your Terminal:
+
+cd ./youproject/
+
+meteor npm install --save babylonjs
+
+meteor
